@@ -1,4 +1,4 @@
-const fs = require('fs');
+cmd install info.js const fs = require('fs');
 const moment = require('moment-timezone');
 
 module.exports = {
@@ -44,8 +44,7 @@ module.exports = {
 \⏰彡𝑁𝑜𝑤 𝑇𝑖𝑚𝑒 : ${time}
 \🔰彡𝐴𝑛𝑦 𝐻𝑒𝑙𝑝 𝐶𝑜𝑛𝑡𝑎𝑐𝑡 :⩸__${messenger}__⩸
 \📛彡𝐵𝑜𝑡 𝐼𝑠 𝑅𝑢𝑛𝑛𝑖𝑛𝑔 𝐹𝑜𝑟 : ${uptimeString}
-    𝑻𝒈: https://t.me/nisan_editz
-    𝑰𝒏𝒔𝒕𝒂: https://www.instagram.com/im_editz_x2.0?
+    
 \===============`,
 		});
 	},
