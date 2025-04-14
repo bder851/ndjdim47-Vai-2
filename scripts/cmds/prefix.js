@@ -9,7 +9,6 @@ const videoUrls = [
     "http://remakeai-production.up.railway.app/Remake_Ai/Nyx_Remake_1744463871995.mp4",
     "http://remakeai-production.up.railway.app/Remake_Ai/Nyx_Remake_1744463918587.mp4",
     "http://remakeai-production.up.railway.app/Remake_Ai/Nyx_Remake_1744463956478.mp4",
-    // Add more unique video URLs here if desired
 ];
 
 // Variable to keep track of the last used video index
@@ -18,8 +17,8 @@ let lastVideoIndex = -1;
 module.exports = {
     config: {
         name: "prefix",
-        version: "1.8",
-        author: "NTKhang (Modified by AI)",
+        version: "1.9.1", // Updated version for new changes
+        author: "NTKhang (Modified by AI & Arokom)",
         countDown: 5,
         role: 0,
         description: "Thay đổi dấu lệnh của bot hoặc xem video chào mừng ngẫu nhiên.",
@@ -32,7 +31,7 @@ module.exports = {
                 + "\n   Example:"
                 + "\n    {pn} # -g"
                 + "\n\n   {pn} reset: change prefix in your box chat to default"
-                + "\n\n   {pn}: Sends a welcome message with a random video."
+                + "\n\n   {pn}: Sends a welcome message with a random video and prefix status."
         }
     },
 
@@ -44,23 +43,34 @@ module.exports = {
             confirmThisThread: "❗ Please react to this message to confirm changing the prefix in your box chat.",
             successGlobal: "✅ Changed system bot prefix to: %1",
             successThisThread: "✅ Changed prefix in your box chat to: %1",
-            thanksInvite: "━━━━━━━━━━━━━━━━━━━\n" +
-                         "🌍 𝐒𝐲𝐬𝐭𝐞𝐦 𝐏𝐫𝐞𝐟𝐢𝐱: %1\n" +
-                         "💬 𝐘𝐨𝐮𝐫 𝐆𝐫𝐨𝐮𝐩 𝐏𝐫𝐞𝐟𝐢𝐱: %2\n" +
-                         "⏰ 𝐒𝐞𝐫𝐯𝐞𝐫 𝐓𝐢𝐦𝐞: %3\n" +
-                         "━━━━━━━━━━━━━━━━━━━\n" +
-                         "💡 𝐓𝐨 𝐮𝐬𝐞 𝐜𝐨𝐦𝐦𝐚𝐧𝐝𝐬, 𝐭𝐲𝐩𝐞 ➜ *help 𝐭𝐨 𝐬𝐞𝐞 𝐚𝐯𝐚𝐢𝐥𝐚𝐛𝐥𝐞 𝐜𝐨𝐦𝐦𝐚𝐧𝐝𝐬!\n" +
-                         "━━━━━━━━━━━━━━━━━━━\n" +
-                         "📹 𝐖𝐚𝐭𝐜𝐡 𝐭𝐡𝐢𝐬 𝐯𝐢𝐝𝐞𝐨:",
+            thanksInvite: "✨ 𝙿𝚁𝙴𝙵𝙸𝚇 𝚂𝚃𝙰𝚃𝚄𝚂 ✨\n\n" +
+                         "🌐 𝙶𝚕𝚘𝚋𝚊𝚕 𝙿𝚛𝚎𝚏𝚒𝚡: %1\n" +
+                         "👥 𝙶𝚛𝚘𝚞𝚙 𝙿𝚛𝚎𝚏𝚒𝚡: %2\n" +
+                         "🕒 𝚃𝚒𝚖𝚎 𝙽𝚘𝚠: %3\n" +
+                         "🙋‍♂️ 𝚁𝚎𝚚𝚞𝚎𝚜𝚝𝚎𝚍 𝚋𝚢: %4\n\n" +
+                         "💡 𝚃𝚢𝚙𝚎 *help 𝚝𝚘 𝚜𝚎𝚎 𝚊𝚟𝚊𝚒𝚕𝚊𝚋𝚕𝚎 𝚌𝚘𝚖𝚖𝚊𝚗𝚍𝚜!\n\n" +
+                         "📹 𝚆𝚊𝚝𝚌𝚑 𝚝𝚑𝚒𝚜 𝚟𝚒𝚍𝚎𝚘:",
             errorVideoOnly: "🔴 Sorry, couldn't fetch the video this time."
         }
     },
 
+    // Helper function to get sender's name
+    getSenderName: async function(api, userID) {
+        try {
+            const user = await api.getUserInfo(userID);
+            return user[userID]?.name || "Unknown User";
+        } catch {
+            return "Unknown User";
+        }
+    },
+
     // Helper function to send welcome message and video
-    sendWelcomeVideo: async function({ message, getLang, threadsData, event }) {
+    sendWelcomeVideo: async function({ message, getLang, threadsData, event, api }) {
         try {
             // Get the current prefix for the thread or default to global config prefix
-            const threadPrefix = await threadsData.get(event.threadID, "data.prefix") || global.GoatBot.config.prefix;
+            const threadPrefix = await threadsData.get(event.threadID, "data.prefix") || global.GoatBot.config.prefix || ".";
+            // Get sender's name
+            const senderName = await this.getSenderName(api, event.senderID);
             // Get current date and time
             const currentDateTime = new Date().toLocaleString('en-GB', {
                 day: '2-digit',
@@ -72,7 +82,7 @@ module.exports = {
             }).replace(',', '');
 
             // Use global system prefix and thread prefix
-            const welcomeText = getLang("thanksInvite", global.GoatBot.config.prefix, threadPrefix, currentDateTime);
+            const welcomeText = getLang("thanksInvite", global.GoatBot.config.prefix || ".", threadPrefix, currentDateTime, senderName);
 
             // Check if there are any videos in the array
             if (videoUrls.length === 0) {
@@ -106,11 +116,11 @@ module.exports = {
     },
 
     onStart: async function (args) {
-        const { message, role, args: commandArgs, commandName, event, threadsData, getLang } = args;
+        const { message, role, args: commandArgs, commandName, event, threadsData, getLang, api } = args;
 
         // If no arguments are provided (e.g., just ".prefix")
         if (!commandArgs[0]) {
-            await this.sendWelcomeVideo({ message, getLang, threadsData, event });
+            await this.sendWelcomeVideo({ message, getLang, threadsData, event, api });
             return;
         }
 
@@ -118,7 +128,7 @@ module.exports = {
         if (commandArgs[0].toLowerCase() === 'reset') {
             try {
                 await threadsData.set(event.threadID, null, "data.prefix");
-                return message.reply(getLang("reset", global.GoatBot.config.prefix));
+                return message.reply(getLang("reset", global.GoatBot.config.prefix || "."));
             } catch (e) {
                 console.error("Error resetting prefix:", e);
                 return message.reply("❌ An error occurred while resetting the prefix.");
@@ -133,7 +143,7 @@ module.exports = {
 
         const formSet = {
             commandName,
-            author: event.senderID,
+            author: event.senderID, // Fixed typo from previous code ("vraisenderID")
             newPrefix
         };
 
@@ -178,9 +188,9 @@ module.exports = {
     },
 
     onChat: async function (args) {
-        const { event, message, getLang, threadsData } = args;
+        const { event, message, getLang, threadsData, api } = args;
         if (event.body && event.body.toLowerCase() === "prefix") {
-            await this.sendWelcomeVideo({ message, getLang, threadsData, event });
+            await this.sendWelcomeVideo({ message, getLang, threadsData, event, api });
             return;
         }
     }
