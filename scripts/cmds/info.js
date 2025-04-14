@@ -15,12 +15,12 @@ module.exports = {
 		envConfig: {}
 	},
 	onStart: async function ({ message }) {
-		const authorName = " ⩸_ 𝙽𝙸 𝚂 𝙰𝙽 _⩸ ";
+		const authorName = " ⩸ Ayanokōji ⩸ ";
 		const ownAge = "『 ⩸_ 20 _⩸ 』";
-		const messenger = " //m.me/shamsuddin.munna.2025";
-		const authorFB = " //www.facebook.com/profile.php?id=61567840496026";
-		const authorNumber = "_017××××××98";
-		const Status = "⩸__ Rls Whit Faria __⩸";
+		const Height  = "5,7";
+		const authorFB = " https://www.facebook.com/profile.php?id=61558762813083";
+		const authorNumber = "_🗿🗿🗿🗿🗿🗿🗿";
+		const relationship = "⩸__ IAM FEELINGLESS __⩸";
 		const now = moment().tz('Asia/Jakarta');
 		const date = now.format('MMMM Do YYYY');
 		const time = now.format('h:mm:ss A');
