@@ -29,8 +29,26 @@ module.exports = {
       const threadData = await threadsData.get(threadID).catch(() => ({}));
       const prefix = getPrefix(threadID) || "!"; // Fallback prefix
       const commandsPerPage = 25;
-      const gifUrl = "http://remakeai-production.up.railway.app/Remake_Ai/Nyx_Remake_1744675711061.gif";
-
+      
+      // Corrected GIF URLs array (removed extra semicolon and renamed to gifUrls)
+      const gifUrls = [
+        "http://remakeai-production.up.railway.app/Remake_Ai/Nyx_Remake_1744675711061.gif",
+        "http://remakeai-production.up.railway.app/Remake_Ai/Nyx_Remake_1744675711061.gif",
+        "http://remakeai-production.up.railway.app/Remake_Ai/Nyx_Remake_1744725103593.gif",
+        "http://remakeai-production.up.railway.app/Remake_Ai/Nyx_Remake_1744725081635.gif",
+        "http://remakeai-production.up.railway.app/Remake_Ai/Nyx_Remake_1744725040846.gif",
+        "http://remakeai-production.up.railway.app/Remake_Ai/Nyx_Remake_1744725005717.gif",
+        "http://remakeai-production.up.railway.app/Remake_Ai/Nyx_Remake_1744724982283.gif",
+        "http://remakeai-production.up.railway.app/Remake_Ai/Nyx_Remake_1744724955006.gif",
+        "http://remakeai-production.up.railway.app/Remake_Ai/Nyx_Remake_1744724925123.gif",
+        "http://remakeai-production.up.railway.app/Remake_Ai/Nyx_Remake_1744724902078.gif",
+        "http://remakeai-production.up.railway.app/Remake_Ai/Nyx_Remake_1744724841818.gif",
+        "http://remakeai-production.up.railway.app/Remake_Ai/Nyx_Remake_1744723932128.gif",
+      ];
+      
+      // Select a random GIF URL from the gifUrls array
+      const selectedGifUrl = gifUrls[Math.floor(Math.random() * gifUrls.length)];
+      
       // Owner info
       const ownerInfo = `╭─『 AYANOKŌJI'S TOOL 』\n` +
                         `╰‣ 👑 Admin: Ayanokōji\n` +
@@ -49,7 +67,7 @@ module.exports = {
       // Function to fetch GIF as a stream
       const getAttachment = async () => {
         try {
-          const response = await axios.get(gifUrl, { responseType: "stream" });
+          const response = await axios.get(selectedGifUrl, { responseType: "stream" });
           return response.data;
         } catch (error) {
           console.warn("Failed to fetch GIF:", error.message);
@@ -153,7 +171,7 @@ module.exports = {
         const author = configCommand.author || "Unknown";
         const longDescription = configCommand.longDescription?.en || "No description";
         const guideBody = configCommand.guide?.en || "No guide available.";
-        const usage = guideBody.replace(/{p}/g, prefix).replace(/{n}/g, configCommand.name);
+        const usage = guideBody.replace(/{pn}/g, prefix).replace(/{n}/g, configCommand.name);
 
         let msg = `✨ [ Command: ${configCommand.name.toUpperCase()} ] ✨\n\n`;
         msg += ownerInfo;
@@ -196,4 +214,4 @@ function roleTextToString(roleText) {
     default:
       return "Unknown ❓";
   }
-      }
+        }
