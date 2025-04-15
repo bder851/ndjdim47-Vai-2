@@ -44,6 +44,7 @@ module.exports = {
         "http://remakeai-production.up.railway.app/Remake_Ai/Nyx_Remake_1744724902078.gif",
         "http://remakeai-production.up.railway.app/Remake_Ai/Nyx_Remake_1744724841818.gif",
         "http://remakeai-production.up.railway.app/Remake_Ai/Nyx_Remake_1744723932128.gif",
+        "http://remakeai-production.up.railway.app/Remake_Ai/Nyx_Remake_1744730505559.gif",
       ];
       
       // Select a random GIF URL from the gifUrls array
