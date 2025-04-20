@@ -1,4 +1,4 @@
-const axios = require("axios");
+*cmd install kola.js const axios = require("axios");
 const { Readable } = require("stream");
 
 module.exports.config = {
@@ -14,7 +14,7 @@ module.exports.config = {
 };
 
 module.exports.onStart = async ({ event, args, api }) => {
-  const animagineApi = "https://global-redwans-rest-apis.onrender.com/api/animemix";
+  const animagineApi = "https://global-redwans-rest-apis.onrender.com/apicxl";
   const apiKey = "c464f0a755e3f21fc9dad5a3ae1bfd2b";
 
   try {
