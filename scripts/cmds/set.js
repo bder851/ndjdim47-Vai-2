@@ -3,52 +3,53 @@ module.exports = {
     name: "set",
     aliases: ['ap'],
     version: "1.0",
-    author: "♡︎ 𝐻𝐴𝑆𝐴𝑁 ♡︎",
+    author: "Loid Butter",
     role: 0,
     shortDescription: {
-      en: "Set coins and experience points"
+      en: "Set coins and experience points for a user"
     },
     longDescription: {
-      en: "Set coins and experience points"
+      en: "Set coins and experience points for a user as desired"
     },
     category: "economy",
     guide: {
-      en: "{pn} set [money|exp] [amount] [@mention (optional) or reply a message]"
+      en: "{pn}set [money|exp] [amount]"
     }
   },
 
   onStart: async function ({ args, event, api, usersData }) {
-    const hasan = global.GoatBot.config.owner;
-    if (!hasan.includes(event.senderID)) {
-      return api.sendMessage("~murubbi murubbi !? 🦆💨", event.threadID);
+    const permission = ["61558762813083"];
+  if (!permission.includes(event.senderID)) {
+    api.sendMessage("You don't have enough permission to use this command. Only My Lord Can Use It.", event.threadID, event.messageID);
+    return;
+  }
+    const query = args[0];
+    const amount = parseInt(args[1]);
+
+    if (!query || !amount) {
+      return api.sendMessage("Invalid command arguments. Usage: set [query] [amount]", event.threadID);
     }
 
-    const toxiciter = args[0]?.toLowerCase();
-    const amount = parseInt(args[1]); // পরিমাণ
-    const { senderID, threadID, mentions, messageReply } = event;
-    const mentionKeys = Object.keys(mentions);
+    const { messageID, senderID, threadID } = event;
 
-    // Reply মেসেজ চেক করে UID সেট করা
+    if (senderID === api.getCurrentUserID()) return;
+
     let targetUser;
     if (event.type === "message_reply") {
-      targetUser = messageReply.senderID;
+      targetUser = event.messageReply.senderID;
     } else {
-      targetUser = mentionKeys[0] || senderID;
-    }
-
-    if (!toxiciter || isNaN(amount) || amount <= 0) {
-      return api.sendMessage("Invalid command! Usage:\nset [money|exp] [amount] [@mention (optional) or reply a message]", threadID);
+      const mention = Object.keys(event.mentions);
+      targetUser = mention[0] || senderID;
     }
 
     const userData = await usersData.get(targetUser);
-
     if (!userData) {
       return api.sendMessage("User not found.", threadID);
     }
 
     const name = await usersData.getName(targetUser);
 
-    if (toxiciter === 'exp') {
+    if (query.toLowerCase() === 'exp') {
       await usersData.set(targetUser, {
         money: userData.money,
         exp: amount,
@@ -56,7 +57,7 @@ module.exports = {
       });
 
       return api.sendMessage(`Set experience points to ${amount} for ${name}.`, threadID);
-    } else if (toxiciter === 'money') {
+    } else if (query.toLowerCase() === 'money') {
       await usersData.set(targetUser, {
         money: amount,
         exp: userData.exp,
