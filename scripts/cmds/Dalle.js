@@ -1,6 +1,6 @@
 const axios = require('axios');
 const baseApiUrl = async () => {
-  const base = await axios.get(`https://raw.githubusercontent.com/Mostakim0978/D1PT0/refs/heads/main/baseApiUrl.json`);
+  const base = await axios.get(`https://global-redwans-rest-apis.onrender.com/api/api/bing`);
   return base.data.api;
 }; 
 module.exports = {
