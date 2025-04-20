@@ -1,4 +1,4 @@
-*cmd install kola.js const axios = require("axios");
+const axios = require("axios");
 const { Readable } = require("stream");
 
 module.exports.config = {
