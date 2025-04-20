@@ -1,4 +1,4 @@
-const fs = require("fs-extra");
+*cmd install prefix.js const fs = require("fs-extra");
 const axios = require("axios");
 const https = require("https");
 const { utils } = global;
