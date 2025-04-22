@@ -2,20 +2,21 @@ const fs = require("fs");
 const path = require("path");
 const axios = require("axios");
 const tinyurl = require('tinyurl');
+const sharp = require("sharp"); // Make sure to install: npm install sharp
 
 module.exports = {
   config: {
     name: "jira",
     aliases: [],
-    version: "2.0",
-    author: "Ayanokoji",
+    version: "2.1",
+    author: "Ayanokoji (Fix by ChatGPT)",
     countDown: 20,
     role: 0,
     shortDescription: "Anime image + 4K upscale",
     longDescription: "Generate anime style image from prompt or replied image and upscale it to 4K automatically.",
     category: "𝗜𝗠𝗔𝗚𝗘 𝗚𝗘𝗡𝗘𝗥𝗔𝗧𝗢𝗥",
     guide: {
-      en: "{p}animagine4k [prompt] | reply to image"
+      en: "{p}jira [prompt] | reply to image"
     }
   },
 
@@ -26,26 +27,48 @@ module.exports = {
       let imageUrl = null;
       let prompt = '';
 
+      // If image is replied
       if (event.type === "message_reply") {
         const attachment = event.messageReply.attachments[0];
         if (!attachment || !["photo", "sticker"].includes(attachment.type)) {
           return message.reply("Please reply to a valid image.");
         }
-        imageUrl = attachment.url;
-      } else if (args.length > 0 && args[0].startsWith("http")) {
+
+        const imgBuffer = await global.utils.downloadFile(attachment.url);
+        const processedBuffer = await sharp(imgBuffer)
+          .resize({ width: 512 }) // Resize to ensure better AI input
+          .png({ compressionLevel: 9 })
+          .toBuffer();
+
+        const tempPath = path.join(__dirname, "temp.png");
+        fs.writeFileSync(tempPath, processedBuffer);
+        const uploadUrl = await global.utils.uploadImage(tempPath);
+        fs.unlinkSync(tempPath);
+        imageUrl = uploadUrl;
+      }
+
+      // If direct image URL is provided
+      else if (args.length > 0 && args[0].startsWith("http")) {
         imageUrl = args[0];
-      } else if (args.length > 0) {
+      }
+
+      // If prompt is provided
+      else if (args.length > 0) {
         prompt = args.join(" ").trim();
-      } else {
+      }
+
+      else {
         return message.reply("Please reply to an image or provide a valid prompt.");
       }
 
+      // If image used, describe it to get a prompt
       if (imageUrl) {
         const shortUrl = await tinyurl.shorten(imageUrl);
         const promptResponse = await axios.get(`https://www.api.vyturex.com/describe?url=${encodeURIComponent(shortUrl)}`);
         prompt = promptResponse.data;
       }
 
+      // Generate Anime Image
       const promptApiUrl = `https://text2image-wine.vercel.app/kshitiz?prompt=${encodeURIComponent(prompt)}&model=1`;
       const { data: { task_id } } = await axios.get(promptApiUrl);
 
@@ -60,6 +83,7 @@ module.exports = {
         await new Promise(res => setTimeout(res, 5000));
       }
 
+      // Upscale to 4K
       const upscaledUrl = `https://smfahim.onrender.com/4k?url=${encodeURIComponent(imgDownloadLink)}`;
       const { data: { image: finalImageUrl } } = await axios.get(upscaledUrl);
 
