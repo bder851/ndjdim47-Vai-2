@@ -4,7 +4,7 @@ const https = require("https");
 module.exports.config = {
   name: "lobon",
   version: "2.5",
-  role: 0,
+  role: 2,
   author: "Ayanokoji",
   description: "Image Generator using Google API with all image type support",
   category: "𝗜𝗠𝗔𝗚𝗘 𝗚𝗘𝗡𝗘𝗥𝗔𝗧𝗢𝗥",
