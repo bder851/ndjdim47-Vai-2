@@ -65,7 +65,7 @@ module.exports = {
 
       const attachment = await global.utils.getStreamFromURL(finalImageUrl, "animagine-4k.png");
       await message.reply({
-        body: `✅ Anime-style 4K image generated from: "${prompt}"`,
+        body: `✅ Anime-style image generated from: "${prompt}"`,
         attachment: attachment
       });
 
