@@ -30,6 +30,7 @@ module.exports.onStart = async ({ event, args, api }) => {
     const url = `${baseURL}?search=${encodeURIComponent(prompt)}&apiKey=${apiKey}`;
 
     const res = await axios.get(url, { httpsAgent: agent });
+    console.log("API Response:", res.data); // Debugging
     const images = res.data?.images;
 
     if (!images || !images.length) {
@@ -48,17 +49,29 @@ module.exports.onStart = async ({ event, args, api }) => {
     const chosen = available[Math.floor(Math.random() * available.length)];
     cache.get(prompt).push(chosen.url);
 
-    const stream = (await axios.get(chosen.url, { responseType: "stream", httpsAgent: agent })).data;
+    try {
+      const stream = (await axios.get(chosen.url, {
+        responseType: "stream",
+        httpsAgent: agent,
+        headers: {
+          "User-Agent": "Mozilla/5.0" // prevent 403 from some image URLs
+        }
+      })).data;
 
-    api.unsendMessage(wait.messageID);
-    await api.sendMessage(
-      {
-        body: `🖼 Result for: "${prompt}"`,
-        attachment: stream
-      },
-      event.threadID,
-      event.messageID
-    );
+      api.unsendMessage(wait.messageID);
+      await api.sendMessage(
+        {
+          body: `🖼 Result for: "${prompt}"`,
+          attachment: stream
+        },
+        event.threadID,
+        event.messageID
+      );
+
+    } catch (imgErr) {
+      console.error("Image stream error:", imgErr?.response?.data || imgErr.message);
+      return api.sendMessage("Image found but failed to load. Try another one.", event.threadID, event.messageID);
+    }
 
   } catch (err) {
     console.error("Image error:", err?.response?.data || err.message);
