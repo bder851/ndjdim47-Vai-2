@@ -38,9 +38,9 @@ module.exports = {
       thanksInvite:
         "✨ 𝙿𝚁𝙴𝙵𝙸𝚇 𝚂𝚃𝙰𝚃𝚄𝚂 ✨\n\n"
         + "🌐 Global Prefix: %1\n"
-        + "👥 Group Prefix: %2\n
-        + "🙋‍♂️ Requested by: %4\n\n"
-        + "💡 Type *help to view available commands!\n\n"
+        + "👥 Group Prefix: %2\n"
+        + "🙋‍♂️ Requested by: %3\n\n"
+        + "💡 Type %1help to view available commands!\n\n"
         + "📹 Watch this video:",
       errorVideoOnly: "🔴 Failed to load video, but here's your prefix info."
     }
@@ -59,12 +59,8 @@ module.exports = {
     const globalPrefix = global.GoatBot.config.prefix || ".";
     const threadPrefix = await threadsData.get(event.threadID, "data.prefix") || globalPrefix;
     const senderName = await this.getSenderName(api, event.senderID);
-    const timeNow = new Date().toLocaleString("en-GB", {
-      day: "2-digit", month: "2-digit", year: "numeric",
-      hour: "2-digit", minute: "2-digit", second: "2-digit"
-    });
 
-    const prefixText = getLang("thanksInvite", globalPrefix, threadPrefix, timeNow, senderName);
+    const prefixText = getLang("thanksInvite", globalPrefix, threadPrefix, senderName);
 
     let randomIndex;
     do {
