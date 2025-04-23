@@ -1,135 +1,151 @@
-let games = {}; 
-function checkWinner(board) {
-  const winPatterns = [
-    [0, 1, 2], [3, 4, 5], [6, 7, 8], 
-    [0, 3, 6], [1, 4, 7], [2, 5, 8], 
-    [0, 4, 8], [2, 4, 6]             
-  ];
-
-  for (const pattern of winPatterns) {
-    const [a, b, c] = pattern;
-    if (board[a] && board[a] === board[b] && board[a] === board[c]) {
-      return board[a]; 
-    }
-  }
-
-  return null; 
-}
-
-function isBoardFull(board) {
-  return board.every((cell) => cell !== null);
-}
-
-function displayBoard(board) {
-  let display = "";
-  for (let i = 0; i < 9; i++) {
-    display += board[i] ? board[i] : "⬛";
-    display += (i + 1) % 3 === 0 ? "\n" : " ";
-  }
-  return display.replace(/❌/g, "❌").replace(/⭕/g, "⭕"); 
-}
-
-function makeBotMove(board, currentPlayer) {
-  for (let i = 0; i < 9; i++) {
-    if (board[i] === null) {
-      board[i] = currentPlayer === "❌" ? "⭕" : "❌";
-      if (checkWinner(board)) {
-        return;
-      }
-      board[i] = null; 
-    }
-  }
-
-  for (let i = 0; i < 9; i++) {
-    if (board[i] === null) {
-      board[i] = currentPlayer === "❌" ? "❌" : "⭕";
-      if (checkWinner(board)) {
-        board[i] = "⭕"; 
-        return;
-      }
-      board[i] = null; 
-    }
-  }
-
-  const emptyCells = board.reduce((acc, cell, index) => {
-    if (cell === null) {
-      acc.push(index);
-    }
-    return acc;
-  }, []);
-
-  if (emptyCells.length > 0) {
-    const randomIndex = Math.floor(Math.random() * emptyCells.length);
-    const botMove = emptyCells[randomIndex];
-    board[botMove] = currentPlayer === "❌" ? "⭕" : "❌";
-  }
-}
-
-function resetGame(playerID) {
-  games[playerID] = {
-    board: Array(9).fill(null),
-    currentPlayer: "❌"
-  };
-}
-
 module.exports = {
   config: {
     name: "ttt",
-    aliases: ["tictactoe"],
     version: "1.0",
-    author: "Kshitiz",
-    category: "game",
+    author: "Rafi",
+    countDown: 5,
+    role: 0,
+    shortDescription: { en: "Play Tic Tac Toe with bot or mentioned user" },
+    longDescription: { en: "Play a game of Tic Tac Toe against the bot or another mentioned user." },
+    category: "games",
+    guide: { en: "{pn} @mention or {pn} bot" }
   },
-  onStart: async function ({ event, api }) {
-    const playerID = event.senderID;
 
-   
-    if (!games[playerID] || isBoardFull(games[playerID].board) || checkWinner(games[playerID].board)) {
-      resetGame(playerID);
+  onStart: async function ({ message, event, args, usersData }) {
+    const mention = Object.keys(event.mentions)[0];
+    const isVsBot = args[0] === "bot";
+    const player1 = event.senderID;
+    const player2 = isVsBot ? "BOT" : mention;
+
+    if (!isVsBot && !mention) {
+      return message.reply("Please mention someone or use `ttt bot` to play with bot.");
     }
 
-    const introMessage = "Reply box by number\nYou are '❌' and the bot is '⭕'.";
-    api.sendMessage(introMessage, event.threadID, event.messageID);
+    const board = Array(9).fill('⬜');
+    const displayBoard = getBoard(board);
 
-    const boardMessage = displayBoard(games[playerID].board);
-    api.sendMessage(boardMessage, event.threadID, event.messageID);
+    const player1Name = await getName(usersData, player1);
+    const player2Name = isVsBot ? "Bot" : await getName(usersData, player2);
+
+    message.reply({
+      body: `⭕ ${player1Name} vs ❌ ${player2Name}\n\n${displayBoard}\n\nReply with a number (1–9) to make your move.`,
+    }, (err, info) => {
+      global.GoatBot.onReply.set(info.messageID, {
+        commandName: "ttt",
+        messageID: info.messageID,
+        board,
+        currentPlayer: player1,
+        player1,
+        player2,
+        isVsBot,
+        usersData
+      });
+    });
   },
-  onChat: async function ({ event, api, args }) {
-    const playerID = event.senderID;
 
-  
-    if (!games[playerID]) {
-      api.sendMessage("", event.threadID);
-      return;
+  onReply: async function ({ message, event, Reply }) {
+    const { board, currentPlayer, player1, player2, isVsBot, usersData } = Reply;
+    const senderID = event.senderID;
+
+    if (senderID !== currentPlayer) return;
+
+    const index = parseInt(event.body) - 1;
+    if (isNaN(index) || index < 0 || index > 8 || board[index] !== '⬜') {
+      return message.reply("Invalid move. Choose a number (1–9) in an empty cell.");
     }
 
-    const position = parseInt(args[0]);
+    board[index] = currentPlayer === player1 ? '⭕' : '❌';
 
-    if (isBoardFull(games[playerID].board) || checkWinner(games[playerID].board)) {
-     
-      resetGame(playerID);
+    if (checkWin(board, board[index])) {
+      const result = getBoard(board);
+      global.GoatBot.onReply.delete(Reply.messageID);
+      const winnerName = await getName(usersData, currentPlayer);
+      return message.reply(`${result}\n\n${board[index]} ${winnerName} wins!`);
     }
 
-    if (isNaN(position) || position < 1 || position > 9 || games[playerID].board[position - 1] !== null) {
-      const errorMessage = "";
-      api.sendMessage(errorMessage, event.threadID);
-      return;
+    if (!board.includes('⬜')) {
+      const result = getBoard(board);
+      global.GoatBot.onReply.delete(Reply.messageID);
+      return message.reply(`${result}\n\nIt's a draw!`);
     }
 
-    games[playerID].board[position - 1] = "❌";
+    if (isVsBot && currentPlayer === player1) {
+      // Bot makes move
+      const available = board.map((v, i) => v === '⬜' ? i : null).filter(v => v !== null);
+      const botMove = available[Math.floor(Math.random() * available.length)];
+      board[botMove] = '❌';
 
-    makeBotMove(games[playerID].board, games[playerID].currentPlayer);
+      if (checkWin(board, '❌')) {
+        const result = getBoard(board);
+        global.GoatBot.onReply.delete(Reply.messageID);
+        return message.reply(`${result}\n\n❌ Bot wins!`);
+      }
 
-    const updatedBoardMessage = displayBoard(games[playerID].board);
-    api.sendMessage(updatedBoardMessage, event.threadID, event.messageID);
+      if (!board.includes('⬜')) {
+        const result = getBoard(board);
+        global.GoatBot.onReply.delete(Reply.messageID);
+        return message.reply(`${result}\n\nIt's a draw!`);
+      }
 
-    const winner = checkWinner(games[playerID].board);
-    if (winner) {
-      const winMessage = `${winner} wins!`;
-      api.sendMessage(winMessage, event.threadID, event.messageID);
-    } else if (isBoardFull(games[playerID].board)) {
-      const drawMessage = "It's a draw!";
-      api.sendMessage(drawMessage, event.threadID, event.messageID);
+      const next = getBoard(board);
+      return message.reply({
+        body: `${next}\n\n⭕ Your turn! Reply with a number (1–9).`
+      }, (err, info) => {
+        global.GoatBot.onReply.set(info.messageID, {
+          commandName: "ttt",
+          messageID: info.messageID,
+          board,
+          currentPlayer: player1,
+          player1,
+          player2,
+          isVsBot,
+          usersData
+        });
+      });
     }
-  },
+
+    // Switch turn in PvP
+    const next = getBoard(board);
+    const nextPlayer = currentPlayer === player1 ? player2 : player1;
+    const nextName = await getName(usersData, nextPlayer);
+
+    message.reply({
+      body: `${next}\n\n${board[nextPlayer === player1 ? 0 : 1] === '⭕' ? '⭕' : '❌'} ${nextName}'s turn! Reply with a number (1–9).`
+    }, (err, info) => {
+      global.GoatBot.onReply.set(info.messageID, {
+        commandName: "ttt",
+        messageID: info.messageID,
+        board,
+        currentPlayer: nextPlayer,
+        player1,
+        player2,
+        isVsBot,
+        usersData
+      });
+    });
+  }
 };
+
+// Helper functions
+function getBoard(b) {
+  return `
+${b[0]} | ${b[1]} | ${b[2]}
+${b[3]} | ${b[4]} | ${b[5]}
+${b[6]} | ${b[7]} | ${b[8]}
+`.trim();
+}
+
+function checkWin(b, symbol) {
+  const lines = [
+    [0, 1, 2], [3, 4, 5], [6, 7, 8],
+    [0, 3, 6], [1, 4, 7], [2, 5, 8],
+    [0, 4, 8], [2, 4, 6]
+  ];
+  return lines.some(([a, b1, c]) => b[a] === symbol && b[b1] === symbol && b[c] === symbol);
+}
+
+async function getName(usersData, id) {
+  if (id === "BOT") return "Bot";
+  const data = await usersData.get(id);
+  return data?.name || "Unknown User";
+      }
