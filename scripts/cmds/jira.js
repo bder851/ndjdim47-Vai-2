@@ -1,8 +1,8 @@
+const axios = require("axios");
+const sharp = require("sharp");
 const fs = require("fs");
 const path = require("path");
-const axios = require("axios");
 const tinyurl = require("tinyurl");
-const sharp = require("sharp");
 
 module.exports = {
   config: {
@@ -12,24 +12,27 @@ module.exports = {
     author: "Ayanokoji (Fixed by ChatGPT)",
     countDown: 20,
     role: 0,
-    shortDescription: "Anime image + 4K upscale",
-    longDescription: "Generate anime-style image from prompt or replied image and upscale it to 4K without glitches.",
-    category: "𝗜𝗠𝗔𝗚𝗘 𝗚𝗘𝗡𝗘𝗥𝗔𝗧𝗢𝗥",
+    shortDescription: {
+      en: "Anime image + 4K upscale"
+    },
+    longDescription: {
+      en: "Generate anime-style image from prompt or replied image and upscale it to 4K without glitches."
+    },
+    category: "image",
     guide: {
       en: "{p}jira [prompt] | reply to image"
     }
   },
 
-  onStart: async function ({ message, event, args, api }) {
+  onStart: async function ({ api, event, args, message }) {
     api.setMessageReaction("🎨", event.messageID, () => {}, true);
 
     try {
       let imageUrl = null;
       let prompt = "";
 
-      // If image is replied
       if (event.type === "message_reply") {
-        const attachment = event.messageReply.attachments[0];
+        const attachment = event.messageReply.attachments?.[0];
         if (!attachment || !["photo", "sticker"].includes(attachment.type)) {
           return message.reply("Please reply to a valid image.");
         }
@@ -42,62 +45,52 @@ module.exports = {
           .normalize()
           .toBuffer();
 
-        const tempPath = path.join(__dirname, "temp_noglitch.png");
+        const tempPath = path.join(__dirname, "noglitch.png");
         fs.writeFileSync(tempPath, processedBuffer);
         const uploadUrl = await global.utils.uploadImage(tempPath);
         fs.unlinkSync(tempPath);
         imageUrl = uploadUrl;
-      }
-
-      // If direct image URL
-      else if (args.length > 0 && args[0].startsWith("http")) {
+      } else if (args.length > 0 && args[0].startsWith("http")) {
         imageUrl = args[0];
-      }
-
-      // If prompt provided
-      else if (args.length > 0) {
+      } else if (args.length > 0) {
         prompt = args.join(" ").trim();
-      }
-
-      else {
+      } else {
         return message.reply("Please reply to an image or provide a valid prompt.");
       }
 
-      // Generate prompt if image used
       if (imageUrl) {
         const shortUrl = await tinyurl.shorten(imageUrl);
-        const promptResponse = await axios.get(`https://www.api.vyturex.com/describe?url=${encodeURIComponent(shortUrl)}`);
-        prompt = promptResponse.data;
+        const promptRes = await axios.get(`https://www.api.vyturex.com/describe?url=${encodeURIComponent(shortUrl)}`);
+        prompt = promptRes.data;
       }
 
-      // Generate image from prompt
-      const promptApiUrl = `https://text2image-wine.vercel.app/kshitiz?prompt=${encodeURIComponent(prompt)}&model=1`;
-      const { data: { task_id } } = await axios.get(promptApiUrl);
+      const genRes = await axios.get(`https://text2image-wine.vercel.app/kshitiz?prompt=${encodeURIComponent(prompt)}&model=1`);
+      const task_id = genRes.data.task_id;
 
-      const progressApiUrl = `https://progress-black.vercel.app/progress?imageid=${task_id}`;
       let imgDownloadLink = null;
+      const progressUrl = `https://progress-black.vercel.app/progress?imageid=${task_id}`;
 
       while (!imgDownloadLink) {
-        const { data: { data: progress } } = await axios.get(progressApiUrl);
-        if (progress.status === 2 && progress.imgs && progress.imgs.length > 0) {
-          imgDownloadLink = progress.imgs[0];
+        const { data } = await axios.get(progressUrl);
+        if (data?.data?.status === 2 && data.data.imgs?.length > 0) {
+          imgDownloadLink = data.data.imgs[0];
+        } else {
+          await new Promise(res => setTimeout(res, 5000));
         }
-        await new Promise(res => setTimeout(res, 5000));
       }
 
-      // Upscale to 4K
-      const upscaledUrl = `https://smfahim.onrender.com/4k?url=${encodeURIComponent(imgDownloadLink)}`;
-      const { data: { image: finalImageUrl } } = await axios.get(upscaledUrl);
+      const upscale = await axios.get(`https://smfahim.onrender.com/4k?url=${encodeURIComponent(imgDownloadLink)}`);
+      const finalImageUrl = upscale.data.image;
 
-      const attachment = await global.utils.getStreamFromURL(finalImageUrl, "animagine-final-4k.png");
-      await message.reply({
-        body: `✅ Anime-style image generated from: "${prompt}"`,
+      const attachment = await global.utils.getStreamFromURL(finalImageUrl, "jira-upscaled.png");
+      return message.reply({
+        body: `✅ Generated from: "${prompt}"`,
         attachment
       });
 
     } catch (err) {
-      console.error("Error:", err.message || err);
-      message.reply("❌ | Something went wrong. Try again later.");
+      console.error(err);
+      return message.reply("❌ | Something went wrong, try again later.");
     }
   }
 };
