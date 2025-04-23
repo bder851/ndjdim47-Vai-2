@@ -1,50 +1,44 @@
 const axios = require("axios");
+
 const baseApiUrl = async () => {
-  const base = await axios.get(
-    `https://raw.githubusercontent.com/Mostakim0978/D1PT0/refs/heads/main/baseApiUrl.json`,
-  );
-  return base.data.api;
+  const base = await axios.get("https://raw.githubusercontent.com/mahmudx7/exe/main/baseApiUrl.json");
+  return base.data.mahmud;
 };
 
-module.exports.config = {
-  name: "fluxpro",
-  version: "2.0",
-  role: 2,
-  author: "Dipto",
-  description: "Generate images with Flux.1 Pro",
-  category: "𝗜𝗠𝗔𝗚𝗘 𝗚𝗘𝗡𝗘𝗥𝗔𝗧𝗢𝗥",
-  preimum: true,
-  guide: "{pn} [prompt] --ratio 1024x1024\n{pn} [prompt]",
-  countDown: 15,
-};
+module.exports = {
+  config: {
+    name: "fluxpro",
+    version: "1.7",
+    author: "MahMUD",
+    countDown: 10,
+    role: 0,
+    category: "Image gen",
+    guide: "{pn} [prompt]"
+  },
 
-module.exports.onStart = async ({ message, event, args, api }) => {
-  try {
-  const prompt = args.join(" ");
-  /*let prompt2, ratio;
-  if (prompt.includes("--ratio")) {
-    const parts = prompt.split("--ratio");
-    prompt2 = parts[0].trim();
-    ratio = parts[1].trim();
-  } else {
-    prompt2 = prompt;
-    ratio = "1024x1024";
-  }*/
-    const startTime = new Date().getTime();
-    const ok = message.reply('wait baby <😘')
-    api.setMessageReaction("⌛", event.messageID, (err) => {}, true);
-    const apiUrl = `${await baseApiUrl()}/flux11?prompt=${prompt}`;
+  onStart: async function ({ api, event, args }) {
+    const prompt = args.join(" ");
+    if (!prompt) return api.sendMessage("Please provide a prompt to generate an image.", event.threadID, event.messageID);
 
-    api.setMessageReaction("✅", event.messageID, (err) => {}, true);
-     message.unsend(ok.messageID)
-    const attachment = await global.utils.getStreamFromURL(apiUrl);
-    const endTime = new Date().getTime();
-    await message.reply({
-          body: `Here's your image\nModel Name: "Flux.1 Pro"\nTime Taken: ${(endTime - startTime) / 1000} second/s`, 
-          attachment
-      });
-  } catch (e) {
-    console.log(e);
-    message.reply("Error: " + e.message);
+    try {
+      const apiUrl = await baseApiUrl();
+      if (!apiUrl) return api.sendMessage("Base API URL could not be loaded.", event.threadID, event.messageID);
+
+      const res = await axios.post(`${apiUrl}/api/fluxpro`, { prompt });
+
+      if (!res.data?.imageUrl) return api.sendMessage("Failed to generate image.", event.threadID, event.messageID);
+
+      const imageStream = await global.utils.getStreamFromURL(res.data.imageUrl);
+
+      const message = await api.sendMessage({
+        body: "✅ Here is your generated image",
+        attachment: imageStream
+      }, event.threadID, event.messageID);
+
+      api.setMessageReaction("🪽", message.messageID, () => {}, true);
+
+    } catch (err) {
+      return api.sendMessage("An error occurred while generating the image.", event.threadID, event.messageID);
+    }
   }
 };
