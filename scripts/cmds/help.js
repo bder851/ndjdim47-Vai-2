@@ -29,21 +29,7 @@ module.exports = {
       const threadData = await threadsData.get(threadID).catch(() => ({}));
       const prefix = getPrefix(threadID) || "!";
 
-      const gifUrls = [
-        "http://remakeai-production.up.railway.app/Remake_Ai/Nyx_Remake_1744675711061.gif",
-        "http://remakeai-production.up.railway.app/Remake_Ai/Nyx_Remake_1744725103593.gif",
-        "http://remakeai-production.up.railway.app/Remake_Ai/Nyx_Remake_1744725081635.gif",
-        "http://remakeai-production.up.railway.app/Remake_Ai/Nyx_Remake_1744725040846.gif",
-        "http://remakeai-production.up.railway.app/Remake_Ai/Nyx_Remake_1744725005717.gif",
-        "http://remakeai-production.up.railway.app/Remake_Ai/Nyx_Remake_1744724982283.gif",
-        "http://remakeai-production.up.railway.app/Remake_Ai/Nyx_Remake_1744724955006.gif",
-        "http://remakeai-production.up.railway.app/Remake_Ai/Nyx_Remake_1744724925123.gif",
-        "http://remakeai-production.up.railway.app/Remake_Ai/Nyx_Remake_1744724902078.gif",
-        "http://remakeai-production.up.railway.app/Remake_Ai/Nyx_Remake_1744724841818.gif",
-        "http://remakeai-production.up.railway.app/Remake_Ai/Nyx_Remake_1744723932128.gif",
-        "http://remakeai-production.up.railway.app/Remake_Ai/Nyx_Remake_1744730505559.gif",
-      ];
-      const selectedGifUrl = gifUrls[Math.floor(Math.random() * gifUrls.length)];
+      const videoUrl = "http://remakeai-production.up.railway.app/Remake_Ai/Nyx_Remake_1745507592749.mp4";
 
       const ownerInfo = `╭─『 AYANOKŌJI'S TOOL 』\n` +
         `╰‣ 👑 Admin: Ayanokōji\n` +
@@ -59,10 +45,10 @@ module.exports = {
 
       const getAttachment = async () => {
         try {
-          const response = await axios.get(selectedGifUrl, { responseType: "stream" });
+          const response = await axios.get(videoUrl, { responseType: "stream" });
           return response.data;
         } catch (error) {
-          console.warn("Failed to fetch GIF:", error.message);
+          console.warn("Failed to fetch video:", error.message);
           return null;
         }
       };
@@ -186,4 +172,4 @@ function roleTextToString(roleText) {
     default:
       return "Unknown ❓";
   }
-        }
+          }
