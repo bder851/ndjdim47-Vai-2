@@ -4,11 +4,15 @@ module.exports = {
 	config: {
 		name: "notification",
 		aliases: ["notify", "noti"],
-		version: "1.7",
+		version: "1.6",
 		author: "NTKhang",
 		countDown: 5,
 		role: 2,
-		description: {
+		shortDescription: {
+			vi: "Gửi thông báo từ admin đến all box",
+			en: "Send notification from admin to all box"
+		},
+		longDescription: {
 			vi: "Gửi thông báo từ admin đến all box",
 			en: "Send notification from admin to all box"
 		},
@@ -30,8 +34,8 @@ module.exports = {
 			errorSendingNotification: "Có lỗi xảy ra khi gửi đến %1 nhóm:\n%2"
 		},
 		en: {
-			missingMessage: "Bby ki ki pathaibo oita bolo 🐸",
-			notification: "♡︎ Ayanokoji ♡︎",
+			missingMessage: "Please enter the message you want to send to all groups",
+			notification: "NOTIFICATION FROM ADMIN ",
 			sendingNotification: "Start sending notification from admin bot to %1 chat groups",
 			sentNotification: "✅ Sent notification to %1 groups successfully",
 			errorSendingNotification: "An error occurred while sending to %1 groups:\n%2"
@@ -39,16 +43,11 @@ module.exports = {
 	},
 
 	onStart: async function ({ message, api, event, args, commandName, envCommands, threadsData, getLang }) {
-		const permission = global.GoatBot.config.owner;
-  if (!permission.includes(event.senderID)) {
-    api.sendMessage("error", event.threadID, event.messageID);
-    return;
-  }
 		const { delayPerGroup } = envCommands[commandName];
 		if (!args[0])
 			return message.reply(getLang("missingMessage"));
 		const formSend = {
-			body: `${getLang("notification")}\n\n${args.join(" ")}`,
+			body: `${getLang("notification")}\n────────────────\n${args.join(" ")}`,
 			attachment: await getStreamsFromAttachment(
 				[
 					...event.attachments,
