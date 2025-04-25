@@ -1,56 +1,63 @@
-const fs = require("fs");
-const path = require("path");
-const axios = require("axios");
+const axios = require('axios');
+const { getStreamFromURL } = global.utils;
 
 module.exports = {
   config: {
-    name: "flux-realism",
-    author: "Nyx",
-    category: "GEN",
-    usePrefix: true,
-    role: 0
+    name: "flux2",
+    version: "1.1",
+    author: "Redwan",
+    countDown: 0,
+    longDescription: {
+      en: "Create AI-generated images with your prompt."
+    },
+    category: "image",
+    role: 0,
+    guide: {
+      en: "{pn} <prompt>"
+    }
   },
 
-  onStart: async ({ args, message, api, event }) => {
-    const prompt = args.join(" ");
+  onStart: async function ({ api, event, args, message }) {
+    if (!this.checkAuthor()) {
+      return message.reply("Unauthorized action.");
+    }
+
+    const prompt = args.join(' ').trim();
     if (!prompt) {
-    message.reply("❌ Please provide a prompt for image generation.");
+      return message.reply("Enter a prompt to generate an image.");
     }
-    try {
-      const loadingMsg = await message.reply("⏳ Generating flux-realism image, please wait...");
-      const encodedPrompt = encodeURIComponent(prompt);
-      const apiUrl = `https://www.noobz-api.rf.gd/api/flux-realism?prompt=${encodedPrompt}`;
-      const response = await axios.get(apiUrl);
-      const imageUrl = response.data;
-      const pathName = path.join(__dirname, "cache");
-      if (!fs.existsSync(pathName)) {
-        fs.mkdirSync(pathName);
-      }
-      const imagePath = path.join(pathName, `flux-realism_${Date.now()}.png`);
-      const imageResponse = await axios.get(imageUrl, { responseType: "arraybuffer" });
-      fs.writeFileSync(imagePath, imageResponse.data);
-      await message.reply({
-        body: `flux-realism generated image for: ${prompt}`,
-        attachment: fs.createReadStream(imagePath)
-      });
-      if (loadingMsg) {
-        await message.unsend(loadingMsg.messageID);
-      }
-      setTimeout(() => {
-        try {
-          if (fs.existsSync(imagePath)) {
-            fs.unlinkSync(imagePath);
-          }
-        } catch (err) {
-          return;
+
+    message.reply("Generating... Please wait.", async (err, info) => {
+      if (err) return console.error(err);
+
+      try {
+        const apiUrl = `https://global-redwans-apis.onrender.com/api/fluxxx?p=${encodeURIComponent(prompt)}&mode=flux`;
+        const response = await axios.get(apiUrl);
+        const { html } = response.data.data;
+
+        const imageUrls = [...html.matchAll(/<a href="(https:\/\/aicdn\.picsart\.com\/[a-zA-Z0-9-]+\.jpg)"/g)].map(match => match[1]);
+
+        if (!imageUrls || imageUrls.length < 2) {
+          return message.reply("Image generation failed. Try again.");
         }
-      }, 1000);
-      
-    } catch (error) {
-      message.reply("❌ Error generating image. Please try again later.");
-      if (loadingMsg) {
-        await message.unsend(loadingMsg.messageID);
+
+        const imageStreams = await Promise.all(
+          imageUrls.slice(0, 2).map((url, index) => getStreamFromURL(url, `flux_image_${index + 1}.png`))
+        );
+
+        message.reply({
+          body: "Here are your images!",
+          attachment: imageStreams,
+        });
+
+      } catch (error) {
+        console.error(error);
+        message.reply("Something went wrong. Try again later.");
       }
-    }
+    });
+  },
+
+  checkAuthor: function () {
+    return this.config.author === "Redwan";
   }
 };
