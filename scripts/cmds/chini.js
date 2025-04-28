@@ -11,7 +11,7 @@ module.exports = {
 		longDescription: {
 			en: "Generate AI images using various styles and aspect ratios"
 		},
-		category: "image",
+		category: "𝗜𝗠𝗔𝗚𝗘 𝗚𝗘𝗡𝗘𝗥𝗔𝗧𝗢𝗥",
 		guide: {
 			en: "{pn} <prompt> [--ar <ratio>] [--s <styleNumber>]\n\n" +
 				"Available styles:\n" +
