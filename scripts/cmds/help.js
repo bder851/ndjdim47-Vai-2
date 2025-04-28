@@ -2,11 +2,17 @@ const axios = require("axios");
 const { getPrefix } = global.utils;
 const { commands, aliases } = global.GoatBot;
 
+const mediaUrls = [
+  "http://remakeai-production.up.railway.app/Remake_Ai/Nyx_Remake_1745777156139.gif",
+  "http://remakeai-production.up.railway.app/Remake_Ai/Nyx_Remake_1745777099916.gif",
+  "http://remakeai-production.up.railway.app/Remake_Ai/Nyx_Remake_1745777021934.gif"
+];
+
 module.exports = {
   config: {
     name: "help",
     aliases: ["use"],
-    version: "1.22",
+    version: "1.24",
     author: "Ayanokōji",
     countDown: 5,
     role: 0,
@@ -29,8 +35,6 @@ module.exports = {
       const threadData = await threadsData.get(threadID).catch(() => ({}));
       const prefix = getPrefix(threadID) || "!";
 
-      const videoUrl = "http://remakeai-production.up.railway.app/Remake_Ai/Nyx_Remake_1745507592749.mp4";
-
       const ownerInfo = `╭─『 AYANOKŌJI'S TOOL 』\n` +
         `╰‣ 👑 Admin: Ayanokōji\n` +
         `╰‣ 🤖 Bot Name: Ayanokōji's Tool\n` +
@@ -45,15 +49,15 @@ module.exports = {
 
       const getAttachment = async () => {
         try {
-          const response = await axios.get(videoUrl, { responseType: "stream" });
+          const randomUrl = mediaUrls[Math.floor(Math.random() * mediaUrls.length)];
+          const response = await axios.get(randomUrl, { responseType: "stream" });
           return response.data;
         } catch (error) {
-          console.warn("Failed to fetch video:", error.message);
+          console.warn("Failed to fetch media:", error.message);
           return null;
         }
       };
 
-      // Paginated command list grouped by category
       if (args.length === 0 || !isNaN(args[0])) {
         const categories = {};
         let totalCommands = 0;
@@ -93,11 +97,12 @@ module.exports = {
 
         msg += footerInfo(totalCommands);
 
-        const attachment = await getAttachment();
-        return await message.reply(attachment ? { body: msg, attachment } : msg);
+        return message.reply({
+          body: msg,
+          attachment: await getAttachment()
+        });
       }
 
-      // Category-specific
       if (args[0].toLowerCase() === "-c") {
         if (!args[1]) return message.reply("🚫 Please specify a category!");
         const categoryName = args[1].toLowerCase();
@@ -115,11 +120,12 @@ module.exports = {
         msg += `╰───────────────◊\n`;
         msg += footerInfo(cmdNames.length);
 
-        const attachment = await getAttachment();
-        return await message.reply(attachment ? { body: msg, attachment } : msg);
+        return message.reply({
+          body: msg,
+          attachment: await getAttachment()
+        });
       }
 
-      // Specific command help
       const commandName = args[0].toLowerCase();
       const command = commands.get(commandName) || commands.get(aliases.get(commandName));
 
@@ -152,8 +158,11 @@ module.exports = {
         `╰───────────────◊\n`;
       msg += footerInfo(commands.size);
 
-      const attachment = await getAttachment();
-      await message.reply(attachment ? { body: msg, attachment } : msg);
+      return message.reply({
+        body: msg,
+        attachment: await getAttachment()
+      });
+
     } catch (error) {
       console.error("Help command error:", error);
       await message.reply("⚠️ An error occurred. Please try again later.");
@@ -172,4 +181,4 @@ function roleTextToString(roleText) {
     default:
       return "Unknown ❓";
   }
-          }
+      }
