@@ -2,22 +2,22 @@ const axios = require("axios");
 
 module.exports.config = {
   name: "bomber",
-  version: "1.1",
+  version: "1.2",
   role: 2,
   author: "saimun sabik",
   description: "SMS Bomber using S4B1K API with strict limit control",
   category: "TOOLS",
-  guide: "*bomber -017xxxxxxxx -100",
+  guide: "bomber 017xxxxxxxx 100",
   countDown: 5
 };
 
 module.exports.onStart = async function ({ args, event, api }) {
-  if (args.length < 2 || !args[0].startsWith("-") || !args[1].startsWith("-")) {
-    return api.sendMessage("Wrong format!\nUse: *bomber -017xxxxxxxx -100", event.threadID, event.messageID);
+  if (args.length < 2) {
+    return api.sendMessage("Wrong format!\nUse: bomber 017xxxxxxxx 100", event.threadID, event.messageID);
   }
 
-  const phone = args[0].slice(1);
-  const limit = parseInt(args[1].slice(1));
+  const phone = args[0];
+  const limit = parseInt(args[1]);
 
   if (!/^\d{6,15}$/.test(phone)) {
     return api.sendMessage("Invalid phone number format.", event.threadID, event.messageID);
