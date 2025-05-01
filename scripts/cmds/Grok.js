@@ -1,4 +1,4 @@
- const axios = require("axios");
+const axios = require("axios");
 const { Readable } = require("stream");
 
 module.exports.config = {
@@ -9,7 +9,10 @@ module.exports.config = {
   description: "Combined Image Generator & Chatbot command",
   category: "IMAGE & CHAT",
   premium: true,
-  guide: "{pn} -i [prompt] → Generate Image\n{pn} [prompt] → Chatbot reply
+  guide: "{pn} -i [prompt] → Generate Image\n{pn} [prompt] → Chatbot reply",
+  countDown: 10
+};
+
 module.exports.onStart = async ({ event, args, api }) => {
   const imageApi = "https://renzweb.onrender.com/api/grok-2-image";
   const chatApi = "https://renzweb.onrender.com/api/grok2";
@@ -135,15 +138,6 @@ module.exports.onReply = async function ({ api, event, Reply }) {
     api.sendMessage(replyText, event.threadID, (err, info) => {
       global.GoatBot.onReply.set(info.messageID, {
         commandName: module.exports.config.name,
-        messageID: info.messageID,
-        author: event.senderID
-      });
-    });
-  } catch (error) {
-    console.error("Reply error:", error.message);
-    api.sendMessage(`Error: ${error.message}`, event.threadID, event.messageID);
-  }
-};       commandName: module.exports.config.name,
         messageID: info.messageID,
         author: event.senderID
       });
