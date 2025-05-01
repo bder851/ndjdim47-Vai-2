@@ -5,9 +5,9 @@ const path = require("path");
 module.exports = {
   config: {
     name: "niji",
-    aliases: ["anime"],
+    aliases: ["moric"],
     version: "1.3",
-    author: "ডালিং Special",
+    author: "Ayanokoji",
     shortDescription: "Generate anime-style art with Niji-v5",
     longDescription: "Creates 4 anime-style AI images using the Niji-v5 model from MidJourney",
     category: "AI",
