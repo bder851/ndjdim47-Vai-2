@@ -5,7 +5,7 @@ module.exports.config = {
   name: "daul",
   version: "1.1",
   role: 0,
-  author: "Ayanokoji",
+  author: "Rez",
   description: "Daul Image Generator",
   category: "𝗜𝗠𝗔𝗚𝗘 𝗚𝗘𝗡𝗘𝗥𝗔𝗧𝗢𝗥",
   premium: true,
