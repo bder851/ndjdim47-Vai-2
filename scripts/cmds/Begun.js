@@ -5,7 +5,7 @@ module.exports.config = {
   name: "begun",
   version: "1.1",
   role: 0,
-  author: "YourName",
+  author: "Rez",
   description: "AnimagineXL Image Generator",
   category: "𝗜𝗠𝗔𝗚𝗘 𝗚𝗘𝗡𝗘𝗥𝗔𝗧𝗢𝗥",
   premium: true,
