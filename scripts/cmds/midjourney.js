@@ -9,7 +9,7 @@ module.exports = {
     version: "3.4",
     author: "Renz",
     countDown: 10,
-    role: 0,
+    role: 2,
     shortDescription: "Generate AI images using Midjourney API",
     longDescription: "Use Midjourney API to generate 4 images and select one with U1–U4",
     category: "ai",
