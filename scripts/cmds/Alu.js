@@ -5,7 +5,7 @@ module.exports.config = {
   name: "alu",
   version: "1.2",
   role: 0,
-  author: "YourName",
+  author: "Rez",
   description: "Animemix Image Generator",
   category: "𝗜𝗠𝗔𝗚𝗘 𝗚𝗘𝗡𝗘𝗥𝗔𝗧𝗢𝗥",
   premium: true,
