@@ -7,7 +7,7 @@ module.exports = {
     name: "niji",
     aliases: ["anime"],
     version: "1.4",
-    author: "xnil6x",
+    author: "Rez",
     shortDescription: "Generate premium anime art",
     longDescription: "▄︻デ══━✦ Creates 4 stunning anime images using Niji-v5 ✦━══デ︻▄",
     category: "AI",
