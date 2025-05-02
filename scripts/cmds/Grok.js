@@ -5,7 +5,7 @@ module.exports.config = {
   name: "grok",
   version: "5.3",
   role: 0,
-  author: "Ayanokoji",
+  author: "Rez",
   description: "Combined Image Generator & Chatbot command",
   category: "IMAGE & CHAT",
   premium: true,
