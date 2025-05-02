@@ -4,7 +4,7 @@ module.exports = {
   config: {
     name: "bomber",
     version: "1.0",
-    author: "xnil6x",
+    author: "API made by S4B1K and file xnil6x",
     role: 2,
     shortDescription: {
       en: "SMS sending tool"
