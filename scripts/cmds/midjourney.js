@@ -6,10 +6,10 @@ module.exports = {
   config: {
     name: "mj",
     aliases: ["midjourney"],
-    version: "3.2",
-    author: "renz",
+    version: "3.4",
+    author: "Renz",
     countDown: 10,
-    role: 2,
+    role: 0,
     shortDescription: "Generate AI images using Midjourney API",
     longDescription: "Use Midjourney API to generate 4 images and select one with U1–U4",
     category: "ai",
@@ -44,8 +44,8 @@ module.exports = {
         const filePath = path.join(__dirname, `cache/mj_${event.senderID}_${i}.jpg`);
         filePaths.push(filePath);
 
-        const img = await axios.get(url, { responseType: "arraybuffer" });
-        fs.writeFileSync(filePath, Buffer.from(img.data, "binary"));
+        const response = await axios.get(url, { responseType: "arraybuffer" });
+        fs.writeFileSync(filePath, Buffer.from(response.data, "binary"));
         attachments.push(fs.createReadStream(filePath));
       }
 
@@ -61,12 +61,11 @@ module.exports = {
           images: results
         });
 
-        // Auto cleanup cache after 30 seconds
         setTimeout(() => {
           filePaths.forEach(p => {
             if (fs.existsSync(p)) fs.unlinkSync(p);
           });
-        }, 30 * 1000);
+        }, 60 * 1000); // 60 sec cleanup
       }, waitMsg.messageID);
 
     } catch (err) {
@@ -85,11 +84,18 @@ module.exports = {
       return api.sendMessage("Invalid reply. Use: U1, U2, U3, or U4.", event.threadID, event.messageID);
 
     try {
-      const stream = await global.utils.getStreamFromURL(Reply.images[index]);
+      const url = Reply.images[index];
+      const tempFile = path.join(__dirname, `cache/mj_select_${event.senderID}.jpg`);
+      const response = await axios.get(url, { responseType: "arraybuffer" });
+      fs.writeFileSync(tempFile, Buffer.from(response.data, "binary"));
+
       api.sendMessage({
         body: `Here is your selected image (${input})`,
-        attachment: stream
-      }, event.threadID);
+        attachment: fs.createReadStream(tempFile)
+      }, event.threadID, () => {
+        if (fs.existsSync(tempFile)) fs.unlinkSync(tempFile);
+      });
+
     } catch (err) {
       console.error("Image send error:", err);
       api.sendMessage("Failed to send the image.", event.threadID, event.messageID);
